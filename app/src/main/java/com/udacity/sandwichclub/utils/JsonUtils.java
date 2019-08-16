@@ -1,12 +1,13 @@
 package com.udacity.sandwichclub.utils;
 
-import android.util.JsonReader;
 import android.util.Log;
 
 import com.udacity.sandwichclub.model.Sandwich;
 
-import java.io.IOException;
-import java.io.StringReader;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,64 +20,34 @@ public class JsonUtils {
 		String description = "";
 		String image = "";
 		List<String> ingredients = new ArrayList<>();
-		JsonReader reader = new JsonReader(new StringReader(rawJson));
 		Sandwich sandwich = new Sandwich();
 
 		try {
-			reader.beginObject();
-			while (reader.hasNext()) {
-				String name = reader.nextName();
-				switch (name) {
-					case "name":
-						reader.beginObject();
-						while (reader.hasNext()) {
-							String objectName = reader.nextName();
-							switch (objectName) {
-								case "mainName":
-									mainName = reader.nextString();
-									break;
-								case "alsoKnownAs":
-									reader.beginArray();
-									while (reader.hasNext()) {
-										alsoKnownAs.add(reader.nextString());
-									}
-									reader.endArray();
-									break;
-							}
-						}
-						reader.endObject();
-						break;
-					case "alsoKnownAs":
-						reader.beginArray();
-						while (reader.hasNext()) {
-							alsoKnownAs.add(reader.nextString());
-						}
-						reader.endArray();
-						break;
-					case "placeOfOrigin":
-						placeOfOrigin = reader.nextString();
-						break;
-					case "description":
-						description = reader.nextString();
-						break;
-					case "image":
-						image = reader.nextString();
-					case "ingredients":
-						reader.nextName();
-						reader.beginArray();
-						while (reader.hasNext()) {
-							ingredients.add(reader.nextString());
-						}
-						reader.endArray();
-						break;
-					default:
-						reader.skipValue();
+
+			JSONObject object = new JSONObject(rawJson);
+			JSONObject nameObject = object.getJSONObject("name");
+			mainName = nameObject.getString("mainName");
+			JSONArray array = nameObject.getJSONArray("alsoKnownAs");
+			for (int i = 0; i < array.length(); i++) {
+				{
+					alsoKnownAs.add(array.getString(i));
+
 				}
-
 			}
-			reader.endObject();
 
-		} catch (IOException exception) {
+			array = object.getJSONArray("ingredients");
+			for (int i = 0; i < array.length(); i++) {
+				{
+					ingredients.add(array.getString(i));
+
+				}
+			}
+
+			description = object.getString("description");
+			image = object.getString("image");
+			placeOfOrigin = object.getString("placeOfOrigin");
+
+		} catch (JSONException exception) {
 			Log.e(JsonUtils.class.getSimpleName(), exception.getLocalizedMessage());
 		}
 
